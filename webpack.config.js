@@ -25,6 +25,8 @@ const generateConfig = ({extensionPath, devMode=false, customOutputPath, analyze
     'react-dom': path.join(__dirname, 'node_modules/@hot-loader/react-dom')
   };
 
+  console.log("Webpack config __dirname is: ", __dirname);
+
   let extensionData;
   if (extensionPath) {
     // console.log("BUILDING WITH EXTENSIONS");
