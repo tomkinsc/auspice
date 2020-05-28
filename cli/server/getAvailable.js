@@ -15,25 +15,29 @@ const getAvailableDatasets = async (localDataPath) => {
     const files = await readdir(localDataPath);
     /* v2 files -- match JSONs not ending with `_tree.json`, `_meta.json`,
     `_tip-frequencies.json`, `_seq.json` */
-    const v2Files = files.filter((file) => (
-      file.endsWith(".json") &&
+    const v2FilesRaw = files.filter((file) => (
+      (file.endsWith(".json")||file.endsWith(".json.gz")) &&
       !file.includes("manifest") &&
       !file.endsWith("_tree.json") &&
       !file.endsWith("_meta.json") &&
       !file.endsWith("_tip-frequencies.json") &&
       !file.endsWith("_root-sequence.json") &&
       !file.endsWith("_seq.json")
-    ))
-    .map((file) => file
+    ));
+
+    const v2Files = v2FilesRaw.map((file) => file
+      .replace(".json.gz", "")
       .replace(".json", "")
       .split("_")
       .join("/")
     );
 
     v2Files.forEach((filepath) => {
+      const rawPathIndex = v2Files.indexOf(filepath);
       datasets.push({
         request: filepath,
         v2: true,
+        isGzipped: v2FilesRaw[rawPathIndex].endsWith(".json.gz"),
         secondTreeOptions: findAvailableSecondTreeOptions(filepath, v2Files)
       });
     });

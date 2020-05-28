@@ -80,6 +80,7 @@ const redirectIfDatapathMatchFound = (res, info, availableDatasets) => {
  * @throws
  */
 const makeFetchAddresses = (info, datasetsPath, availableDatasets) => {
+  info.isGzipped=false;
   if (info.dataType !== "dataset") {
     info.address = path.join(
       datasetsPath,
@@ -89,7 +90,12 @@ const makeFetchAddresses = (info, datasetsPath, availableDatasets) => {
     const requestStr = info.parts.join("/"); // TO DO
     const availableInfo = availableDatasets.filter((d) => d.request === requestStr)[0];
     if (availableInfo.v2) {
-      info.address = path.join(datasetsPath, `${info.parts.join("_")}.json`);
+      if (!availableInfo.isGzipped){
+        info.address = path.join(datasetsPath, `${info.parts.join("_")}.json`);
+      } else {
+        info.address = path.join(datasetsPath, `${info.parts.join("_")}.json.gz`);
+        info.isGzipped=true;
+      }
     } else {
       info.address = {
         meta: path.join(datasetsPath, `${info.parts.join("_")}_meta.json`),
@@ -107,6 +113,9 @@ const sendJson = async (res, info) => {
     const readStream = fs.createReadStream(info.address);
     readStream.on('open', () => {
       res.set('Content-Type', 'application/json');
+      if (info.isGzipped){
+        res.set('Content-Encoding', 'gzip');
+      }
       readStream.pipe(res);
     });
     readStream.on('error', (err) => {
