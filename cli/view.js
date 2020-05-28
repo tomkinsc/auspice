@@ -12,7 +12,6 @@ const version = require('../src/version').version;
 const chalk = require('chalk');
 const SUPPRESS = require('argparse').Const.SUPPRESS;
 
-
 const addParser = (parser) => {
   const description = `Launch a local server to view locally available datasets & narratives.
   The handlers for (auspice) client requests can be overridden here (see documentation for more details).
@@ -102,8 +101,18 @@ const run = (args) => {
   const app = express();
   app.set('port', process.env.PORT || 4000);
   app.set('host', process.env.HOST || "localhost");
-  app.use(compression());
+  app.use(compression({ filter: shouldCompress }));
   app.use(nakedRedirect({reverse: true})); /* redirect www.name.org to name.org */
+
+  function shouldCompress (req, res) {
+    if (req.headers['x-no-compression']) {
+      // don't compress responses with this request header
+      return false
+    }
+
+    // fallback to standard filter function
+    return compression.filter(req, res)
+  }
 
   if (args.customBuild) {
     utils.warn("--customBuild is no longer used and will be removed in a future version. We now serve a custom auspice build if one exists in the directory `auspice view` is run from");

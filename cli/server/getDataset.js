@@ -9,6 +9,10 @@ const setUpGetDatasetHandler = ({datasetsPath}) => {
       const redirected = helpers.redirectIfDatapathMatchFound(res, info, availableDatasets);
       if (redirected) return;
       helpers.makeFetchAddresses(info, datasetsPath, availableDatasets);
+      if (info.isGzipped){
+        req.headers['x-no-compression']=true;
+      }
+
       await helpers.sendJson(res, info);
     } catch (err) {
       console.trace(err);
